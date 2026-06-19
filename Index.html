@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarv India ID Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #dfe6ed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ── Setup Banner ── */
+        #setup-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            max-width: 520px;
+            width: 100%;
+            display: none;
+        }
+        #setup-banner h3 { color: #856404; margin-bottom: 8px; }
+        #setup-banner p { color: #856404; font-size: 13px; line-height: 1.5; }
+        #setup-banner input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #ffc107;
+            border-radius: 6px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        #setup-banner button {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #setup-banner button:hover { background: #e0a800; }
+
+        /* ── Control Panel ── */
+        .control-panel {
+            background: #fff;
+            border-radius: 14px;
+            padding: 30px 35px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        .control-panel h1 {
+            text-align: center;
+            color: #1a237e;
+            font-size: 24px;
+            margin-bottom: 22px;
+            font-style: italic;
+        }
+        .section-label {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: #1565c0; outline: none; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            color: #fff;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s;
+            position: relative;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-blue { background: #1565c0; }
+        .btn-green { background: #2e7d32; }
+        .btn-yellow { background: #f9a825; color: #333; }
+        .btn-cyan { background: #00acc1; }
+        .btn-orange { background: #e65100; }
+
+        .or-divider {
+            text-align: center;
+            color: #999;
+            margin: 6px 0;
+            font-size: 13px;
+        }
+
+        .file-input-wrap {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+        }
+
+        #status-msg {
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            display: none;
+        }
+        .status-success { background: #d4edda; color: #155724; display: block !important; }
+        .status-error { background: #f8d7da; color: #721c24; display: block !important; }
+        .status-info { background: #d1ecf1; color: #0c5460; display: block !important; }
+        .status-uploading { background: #e8eaf6; color: #283593; display: block !important; }
+
+        /* ── Upload Progress ── */
+        .upload-badge {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        .upload-badge.show { display: flex; }
+        .upload-badge.uploading { background: #fff3e0; border-color: #ff9800; color: #e65100; }
+        .upload-badge.error { background: #fce4ec; border-color: #e53935; color: #c62828; }
+
+        /* ── ID Card ── */
+        #id-card {
+            width: 350px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+            background: #fff;
+            margin-bottom: 30px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0d1b3e 0%, #1a237e 100%);
+            color: #f9a825;
+            text-align: center;
+            padding: 12px 10px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-style: italic;
+        }
+        .card-body { padding: 18px 22px; }
+        .photo-wrap {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .photo-wrap img, .photo-placeholder {
+            width: 120px;
+            height: 140px;
+            object-fit: cover;
+            border: 3px solid #ddd;
+            border-radius: 6px;
+            background: #f0ece4;
+        }
+        .photo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bbb;
+            font-size: 40px;
+            margin: 0 auto;
+        }
+        .card-field {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .card-field .label {
+            font-weight: 700;
+            color: #c62828;
+            min-width: 120px;
+        }
+        .card-field .sep { margin: 0 6px; color: #333; }
+        .card-field .value { color: #333; font-weight: 500; }
+        .card-footer {
+            background: linear-gradient(135deg, #0d1b3e 0%, #1a237e 100%);
+            color: #f9a825;
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Bulk Mode ── */
+        .bulk-section {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px 35px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        .bulk-section h3 { color: #1a237e; margin-bottom: 12px; }
+        .bulk-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* ── Spinner ── */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .spinner-dark {
+            border: 3px solid rgba(0,0,0,0.15);
+            border-top-color: #333;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Print ── */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .control-panel, .bulk-section, #setup-banner, #status-msg { display: none !important; }
+            #id-card { box-shadow: none; margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Setup Banner -->
+<div id="setup-banner">
+    <h3>First-Time Setup</h3>
+    <p>Paste your <b>Web App URL</b> below.<br>
+       Run the Apps Script <b>setupSheet()</b> first to auto-create headers &amp; Drive photo folder.</p>
+    <input type="text" id="sheet-url-input" placeholder="Paste Web App URL here...">
+    <button onclick="saveSheetConfig()">Save & Connect</button>
+</div>
+
+<!-- Control Panel -->
+<div class="control-panel">
+    <h1>Sarv India ID Generator</h1>
+
+    <div class="section-label">1. Search Employee:</div>
+    <input type="text" id="emp-code" class="search-input" placeholder="Enter Code (e.g. 1000)" onkeydown="if(event.key==='Enter')searchEmployee()">
+    <button class="btn btn-blue" id="btn-search" onclick="searchEmployee()">Search Employee</button>
+
+    <div id="status-msg"></div>
+
+    <div class="section-label" style="margin-top:16px;">2. Set Photo (Auto-Saves to Drive):</div>
+    <button class="btn btn-green" id="btn-camera" onclick="usePhoneCamera()">Use Phone Camera</button>
+    <div class="or-divider">- OR -</div>
+    <div class="file-input-wrap">
+        <input type="file" id="photo-file" accept="image/*" onchange="handleFilePhoto(this)">
+    </div>
+
+    <!-- Upload status badge -->
+    <div class="upload-badge" id="upload-badge">
+        <span id="upload-badge-icon"></span>
+        <span id="upload-badge-text"></span>
+    </div>
+
+    <button class="btn btn-yellow" onclick="saveAsPNG()">SAVE AS PNG (AUTO NAME)</button>
+    <button class="btn btn-cyan" onclick="printCard()">PRINT / SAVE AS PDF</button>
+
+    <div style="margin-top:14px; text-align:center;">
+        <button style="background:none;border:none;color:#1565c0;cursor:pointer;font-size:13px;text-decoration:underline;" onclick="showSetup()">Change Sheet Connection</button>
+    </div>
+</div>
+
+<!-- ID Card Preview -->
+<div id="id-card">
+    <div class="card-header">SARV INDIA HOME FURNISHING</div>
+    <div class="card-body">
+        <div class="photo-wrap">
+            <div class="photo-placeholder" id="card-photo-placeholder">
+                <span>&#128100;</span>
+            </div>
+            <img id="card-photo" src="" alt="Employee Photo" style="display:none;" crossorigin="anonymous">
+        </div>
+        <div class="card-field"><span class="label">Emp Code:</span><span class="sep">-</span><span class="value" id="card-empcode">-</span></div>
+        <div class="card-field"><span class="label">Name:</span><span class="sep">-</span><span class="value" id="card-name">-</span></div>
+        <div class="card-field"><span class="label">Gender:</span><span class="sep">-</span><span class="value" id="card-gender">-</span></div>
+        <div class="card-field"><span class="label">Father's Name:</span><span class="sep">-</span><span class="value" id="card-father">-</span></div>
+        <div class="card-field"><span class="label">Department:</span><span class="sep">-</span><span class="value" id="card-dept">-</span></div>
+        <div class="card-field"><span class="label">Designation:</span><span class="sep">-</span><span class="value" id="card-desig">-</span></div>
+        <div class="card-field"><span class="label">D.O.J:</span><span class="sep">-</span><span class="value" id="card-doj">-</span></div>
+    </div>
+    <div class="card-footer">www.sarvindia.com</div>
+</div>
+
+<!-- Bulk Section -->
+<div class="bulk-section">
+    <h3>Bulk Generate (Range)</h3>
+    <input type="text" id="bulk-from" class="bulk-input" placeholder="From Emp Code (e.g. 1000)">
+    <input type="text" id="bulk-to" class="bulk-input" placeholder="To Emp Code (e.g. 1010)">
+    <button class="btn btn-blue" onclick="bulkGenerate()">Generate All in Range</button>
+</div>
+
+<!-- html2canvas CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+// ── Configuration ──
+const STORAGE_KEY = 'sarv_id_generator_config';
+let currentEmployee = null;
+
+function getConfig() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+}
+
+function saveSheetConfig() {
+    const input = document.getElementById('sheet-url-input').value.trim();
+    if (!input) { alert('Please enter a Web App URL.'); return; }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ webAppUrl: input }));
+    document.getElementById('setup-banner').style.display = 'none';
+    showStatus('Connected successfully!', 'success');
+}
+
+function showSetup() {
+    const banner = document.getElementById('setup-banner');
+    banner.style.display = 'block';
+    const cfg = getConfig();
+    if (cfg) document.getElementById('sheet-url-input').value = cfg.webAppUrl || '';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    if (!getConfig()) showSetup();
+});
+
+// ── Status Messages ──
+function showStatus(msg, type) {
+    const el = document.getElementById('status-msg');
+    el.innerHTML = msg;
+    el.className = 'status-' + type;
+    if (type !== 'info' && type !== 'uploading') setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// ── Upload Badge ──
+function showUploadBadge(text, state) {
+    const badge = document.getElementById('upload-badge');
+    const icon = document.getElementById('upload-badge-icon');
+    const textEl = document.getElementById('upload-badge-text');
+
+    badge.className = 'upload-badge show ' + state;
+    textEl.textContent = text;
+
+    if (state === 'uploading') {
+        icon.innerHTML = '<span class="spinner spinner-dark"></span>';
+    } else if (state === '') {
+        icon.textContent = '✅';
+        setTimeout(() => { badge.className = 'upload-badge'; }, 4000);
+    } else if (state === 'error') {
+        icon.textContent = '❌';
+        setTimeout(() => { badge.className = 'upload-badge'; }, 5000);
+    }
+}
+
+// ── Search Employee ──
+async function searchEmployee() {
+    const code = document.getElementById('emp-code').value.trim();
+    if (!code) { showStatus('Please enter an employee code.', 'error'); return; }
+
+    const cfg = getConfig();
+    if (!cfg || !cfg.webAppUrl) { showStatus('Set up Google Sheet connection first.', 'error'); showSetup(); return; }
+
+    const btn = document.getElementById('btn-search');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Searching...';
+    showStatus('Searching...', 'info');
+
+    try {
+        const url = cfg.webAppUrl + '?action=search&empCode=' + encodeURIComponent(code);
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.error) { showStatus(data.error, 'error'); return; }
+        if (!data.found) { showStatus('Employee not found for code: ' + code, 'error'); return; }
+
+        currentEmployee = data.employee;
+        populateCard(data.employee);
+        showStatus('Employee found: ' + data.employee.name, 'success');
+    } catch (err) {
+        showStatus('Connection error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Search Employee';
+    }
+}
+
+function populateCard(emp) {
+    document.getElementById('card-empcode').textContent = emp.empCode || '-';
+    document.getElementById('card-name').textContent = emp.name || '-';
+    document.getElementById('card-gender').textContent = emp.gender || '-';
+    document.getElementById('card-father').textContent = emp.fatherName || '-';
+    document.getElementById('card-dept').textContent = emp.department || '-';
+    document.getElementById('card-desig').textContent = emp.designation || '-';
+    document.getElementById('card-doj').textContent = emp.doj || '-';
+
+    const img = document.getElementById('card-photo');
+    const placeholder = document.getElementById('card-photo-placeholder');
+
+    if (emp.photoUrl) {
+        const directUrl = convertDriveUrl(emp.photoUrl);
+        img.src = directUrl;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+        img.onerror = () => {
+            img.style.display = 'none';
+            placeholder.style.display = 'flex';
+        };
+    } else {
+        img.style.display = 'none';
+        placeholder.style.display = 'flex';
+    }
+}
+
+function convertDriveUrl(url) {
+    if (!url) return '';
+    let fileId = '';
+
+    let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) fileId = match[1];
+
+    if (!fileId) {
+        match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (match) fileId = match[1];
+    }
+
+    if (!fileId && /^[a-zA-Z0-9_-]{20,}$/.test(url)) fileId = url;
+
+    if (fileId) return 'https://lh3.googleusercontent.com/d/' + fileId;
+    return url;
+}
+
+// ── Photo Handling with Auto-Upload to Drive ──
+
+function usePhoneCamera() {
+    const empCode = document.getElementById('card-empcode').textContent.trim();
+    if (empCode === '-') {
+        showStatus('Search an employee first, then click photo.', 'error');
+        return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = function() { handleFilePhoto(this); };
+    input.click();
+}
+
+function handleFilePhoto(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        const dataUrl = e.target.result;
+
+        // Show on card immediately
+        const img = document.getElementById('card-photo');
+        const placeholder = document.getElementById('card-photo-placeholder');
+        img.src = dataUrl;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+
+        // Auto-upload to Drive
+        const empCode = document.getElementById('card-empcode').textContent.trim();
+        if (empCode && empCode !== '-') {
+            uploadPhotoToDrive(empCode, dataUrl, file.type);
+        } else {
+            showUploadBadge('Photo set locally. Search employee first to auto-save to Drive.', 'uploading');
+            setTimeout(() => { document.getElementById('upload-badge').className = 'upload-badge'; }, 3000);
+        }
+    };
+
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Upload photo to Google Drive via Apps Script Web App
+ */
+async function uploadPhotoToDrive(empCode, dataUrl, mimeType) {
+    const cfg = getConfig();
+    if (!cfg || !cfg.webAppUrl) {
+        showUploadBadge('Sheet not connected. Photo saved locally only.', 'error');
+        return;
+    }
+
+    const empName = document.getElementById('card-name').textContent.trim();
+
+    // Extract base64 data (remove "data:image/jpeg;base64," prefix)
+    const base64Data = dataUrl.split(',')[1];
+
+    showUploadBadge('Uploading to Google Drive...', 'uploading');
+
+    try {
+        const resp = await fetch(cfg.webAppUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'uploadPhoto',
+                empCode: empCode,
+                empName: empName,
+                imageData: base64Data,
+                mimeType: mimeType || 'image/jpeg'
+            })
+        });
+
+        // Apps Script redirects on POST, follow the redirect
+        const data = await resp.json();
+
+        if (data.error) {
+            showUploadBadge('Upload failed: ' + data.error, 'error');
+            return;
+        }
+
+        // Update card with Drive URL
+        if (data.directUrl) {
+            document.getElementById('card-photo').src = data.directUrl;
+        }
+
+        // Update current employee object
+        if (currentEmployee) {
+            currentEmployee.photoUrl = data.photoUrl;
+        }
+
+        showUploadBadge('Saved to Drive & Sheet updated! (' + (data.fileName || empCode) + ')', '');
+
+    } catch (err) {
+        showUploadBadge('Upload error: ' + err.message, 'error');
+    }
+}
+
+// ── Re-upload: if user searched employee then clicks photo ──
+// After searching, if employee has no photo, prompt camera automatically
+function promptPhotoIfMissing() {
+    if (currentEmployee && !currentEmployee.photoUrl) {
+        showStatus('No photo found. Click "Use Phone Camera" or "Choose File" to add one.', 'info');
+    }
+}
+
+// ── Save as PNG ──
+async function saveAsPNG() {
+    const empName = document.getElementById('card-name').textContent.trim();
+    const empCode = document.getElementById('card-empcode').textContent.trim();
+    const fileName = empCode !== '-' ? empCode + '_' + empName.replace(/\s+/g, '_') + '_ID.png' : 'ID_Card.png';
+
+    try {
+        showStatus('Generating PNG...', 'info');
+        const card = document.getElementById('id-card');
+        const canvas = await html2canvas(card, {
+            scale: 3,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+        });
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showStatus('Saved: ' + fileName, 'success');
+    } catch (err) {
+        showStatus('PNG error: ' + err.message, 'error');
+    }
+}
+
+// ── Print / PDF ──
+function printCard() {
+    window.print();
+}
+
+// ── Bulk Generate ──
+async function bulkGenerate() {
+    const from = parseInt(document.getElementById('bulk-from').value);
+    const to = parseInt(document.getElementById('bulk-to').value);
+    if (isNaN(from) || isNaN(to) || from > to) {
+        showStatus('Enter valid From/To codes.', 'error');
+        return;
+    }
+    if (to - from > 50) {
+        showStatus('Max 50 cards at a time.', 'error');
+        return;
+    }
+
+    const cfg = getConfig();
+    if (!cfg || !cfg.webAppUrl) { showStatus('Set up Sheet connection first.', 'error'); showSetup(); return; }
+
+    showStatus('Generating bulk cards... 0/' + (to - from + 1), 'info');
+    let count = 0;
+
+    for (let code = from; code <= to; code++) {
+        try {
+            const url = cfg.webAppUrl + '?action=search&empCode=' + encodeURIComponent(code);
+            const resp = await fetch(url);
+            const data = await resp.json();
+            if (data.found) {
+                populateCard(data.employee);
+                await new Promise(r => setTimeout(r, 500));
+                await saveAsPNG();
+                count++;
+                showStatus('Generating... ' + count + '/' + (to - from + 1), 'info');
+                await new Promise(r => setTimeout(r, 300));
+            }
+        } catch (err) {
+            console.error('Error for code ' + code + ':', err);
+        }
+    }
+    showStatus('Bulk done! ' + count + ' cards generated.', 'success');
+}
+</script>
+</body>
+</html>
