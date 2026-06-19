@@ -16,39 +16,6 @@
             padding: 20px;
         }
 
-        /* ── Setup Banner ── */
-        #setup-banner {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 10px;
-            padding: 18px 24px;
-            margin-bottom: 20px;
-            max-width: 520px;
-            width: 100%;
-            display: none;
-        }
-        #setup-banner h3 { color: #856404; margin-bottom: 8px; }
-        #setup-banner p { color: #856404; font-size: 13px; line-height: 1.5; }
-        #setup-banner input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #ffc107;
-            border-radius: 6px;
-            font-size: 14px;
-            margin: 10px 0;
-        }
-        #setup-banner button {
-            background: #ffc107;
-            color: #333;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        #setup-banner button:hover { background: #e0a800; }
-
         /* ── Control Panel ── */
         .control-panel {
             background: #fff;
@@ -103,7 +70,6 @@
         .btn-green { background: #2e7d32; }
         .btn-yellow { background: #f9a825; color: #333; }
         .btn-cyan { background: #00acc1; }
-        .btn-orange { background: #e65100; }
 
         .or-divider {
             text-align: center;
@@ -130,7 +96,6 @@
         .status-success { background: #d4edda; color: #155724; display: block !important; }
         .status-error { background: #f8d7da; color: #721c24; display: block !important; }
         .status-info { background: #d1ecf1; color: #0c5460; display: block !important; }
-        .status-uploading { background: #e8eaf6; color: #283593; display: block !important; }
 
         /* ── Upload Progress ── */
         .upload-badge {
@@ -255,21 +220,12 @@
         /* ── Print ── */
         @media print {
             body { background: #fff; padding: 0; }
-            .control-panel, .bulk-section, #setup-banner, #status-msg { display: none !important; }
+            .control-panel, .bulk-section, #status-msg { display: none !important; }
             #id-card { box-shadow: none; margin: 0 auto; }
         }
     </style>
 </head>
 <body>
-
-<!-- Setup Banner -->
-<div id="setup-banner">
-    <h3>First-Time Setup</h3>
-    <p>Paste your <b>Web App URL</b> below.<br>
-       Run the Apps Script <b>setupSheet()</b> first to auto-create headers &amp; Drive photo folder.</p>
-    <input type="text" id="sheet-url-input" placeholder="Paste Web App URL here...">
-    <button onclick="saveSheetConfig()">Save & Connect</button>
-</div>
 
 <!-- Control Panel -->
 <div class="control-panel">
@@ -296,10 +252,6 @@
 
     <button class="btn btn-yellow" onclick="saveAsPNG()">SAVE AS PNG (AUTO NAME)</button>
     <button class="btn btn-cyan" onclick="printCard()">PRINT / SAVE AS PDF</button>
-
-    <div style="margin-top:14px; text-align:center;">
-        <button style="background:none;border:none;color:#1565c0;cursor:pointer;font-size:13px;text-decoration:underline;" onclick="showSetup()">Change Sheet Connection</button>
-    </div>
 </div>
 
 <!-- ID Card Preview -->
@@ -335,40 +287,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-// ── Configuration ──
-const STORAGE_KEY = 'sarv_id_generator_config';
+/*
+ * ════════════════════════════════════════════════════════════════
+ *  CONFIGURATION — Paste your Apps Script Web App URL below
+ *  (Deploy → New Deployment → Web App → Copy URL)
+ * ════════════════════════════════════════════════════════════════
+ */
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxyNs--ZV87bB4e0l_jyh3MpF4TBflr_N7uDXNVmYPFM10a0GxNDLRU0a-F9oJ0AEbHlw/exec';
+/*
+ * ════════════════════════════════════════════════════════════════
+ */
+
 let currentEmployee = null;
-
-function getConfig() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-}
-
-function saveSheetConfig() {
-    const input = document.getElementById('sheet-url-input').value.trim();
-    if (!input) { alert('Please enter a Web App URL.'); return; }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ webAppUrl: input }));
-    document.getElementById('setup-banner').style.display = 'none';
-    showStatus('Connected successfully!', 'success');
-}
-
-function showSetup() {
-    const banner = document.getElementById('setup-banner');
-    banner.style.display = 'block';
-    const cfg = getConfig();
-    if (cfg) document.getElementById('sheet-url-input').value = cfg.webAppUrl || '';
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    if (!getConfig()) showSetup();
-});
 
 // ── Status Messages ──
 function showStatus(msg, type) {
     const el = document.getElementById('status-msg');
     el.innerHTML = msg;
     el.className = 'status-' + type;
-    if (type !== 'info' && type !== 'uploading') setTimeout(() => { el.style.display = 'none'; }, 5000);
+    if (type !== 'info') setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 
 // ── Upload Badge ──
@@ -396,8 +333,10 @@ async function searchEmployee() {
     const code = document.getElementById('emp-code').value.trim();
     if (!code) { showStatus('Please enter an employee code.', 'error'); return; }
 
-    const cfg = getConfig();
-    if (!cfg || !cfg.webAppUrl) { showStatus('Set up Google Sheet connection first.', 'error'); showSetup(); return; }
+    if (WEB_APP_URL === 'PASTE_YOUR_WEB_APP_URL_HERE') {
+        showStatus('Open index.html and set your Web App URL in the WEB_APP_URL config line.', 'error');
+        return;
+    }
 
     const btn = document.getElementById('btn-search');
     btn.disabled = true;
@@ -405,7 +344,7 @@ async function searchEmployee() {
     showStatus('Searching...', 'info');
 
     try {
-        const url = cfg.webAppUrl + '?action=search&empCode=' + encodeURIComponent(code);
+        const url = WEB_APP_URL + '?action=search&empCode=' + encodeURIComponent(code);
         const resp = await fetch(url);
         const data = await resp.json();
 
@@ -506,33 +445,26 @@ function handleFilePhoto(input) {
         if (empCode && empCode !== '-') {
             uploadPhotoToDrive(empCode, dataUrl, file.type);
         } else {
-            showUploadBadge('Photo set locally. Search employee first to auto-save to Drive.', 'uploading');
-            setTimeout(() => { document.getElementById('upload-badge').className = 'upload-badge'; }, 3000);
+            showStatus('Search an employee first to auto-save photo to Drive.', 'error');
         }
     };
 
     reader.readAsDataURL(file);
 }
 
-/**
- * Upload photo to Google Drive via Apps Script Web App
- */
 async function uploadPhotoToDrive(empCode, dataUrl, mimeType) {
-    const cfg = getConfig();
-    if (!cfg || !cfg.webAppUrl) {
-        showUploadBadge('Sheet not connected. Photo saved locally only.', 'error');
+    if (WEB_APP_URL === 'PASTE_YOUR_WEB_APP_URL_HERE') {
+        showUploadBadge('Set WEB_APP_URL in index.html first.', 'error');
         return;
     }
 
     const empName = document.getElementById('card-name').textContent.trim();
-
-    // Extract base64 data (remove "data:image/jpeg;base64," prefix)
     const base64Data = dataUrl.split(',')[1];
 
     showUploadBadge('Uploading to Google Drive...', 'uploading');
 
     try {
-        const resp = await fetch(cfg.webAppUrl, {
+        const resp = await fetch(WEB_APP_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
@@ -544,7 +476,6 @@ async function uploadPhotoToDrive(empCode, dataUrl, mimeType) {
             })
         });
 
-        // Apps Script redirects on POST, follow the redirect
         const data = await resp.json();
 
         if (data.error) {
@@ -552,12 +483,10 @@ async function uploadPhotoToDrive(empCode, dataUrl, mimeType) {
             return;
         }
 
-        // Update card with Drive URL
         if (data.directUrl) {
             document.getElementById('card-photo').src = data.directUrl;
         }
 
-        // Update current employee object
         if (currentEmployee) {
             currentEmployee.photoUrl = data.photoUrl;
         }
@@ -566,14 +495,6 @@ async function uploadPhotoToDrive(empCode, dataUrl, mimeType) {
 
     } catch (err) {
         showUploadBadge('Upload error: ' + err.message, 'error');
-    }
-}
-
-// ── Re-upload: if user searched employee then clicks photo ──
-// After searching, if employee has no photo, prompt camera automatically
-function promptPhotoIfMissing() {
-    if (currentEmployee && !currentEmployee.photoUrl) {
-        showStatus('No photo found. Click "Use Phone Camera" or "Choose File" to add one.', 'info');
     }
 }
 
@@ -620,15 +541,17 @@ async function bulkGenerate() {
         return;
     }
 
-    const cfg = getConfig();
-    if (!cfg || !cfg.webAppUrl) { showStatus('Set up Sheet connection first.', 'error'); showSetup(); return; }
+    if (WEB_APP_URL === 'PASTE_YOUR_WEB_APP_URL_HERE') {
+        showStatus('Set WEB_APP_URL in index.html first.', 'error');
+        return;
+    }
 
     showStatus('Generating bulk cards... 0/' + (to - from + 1), 'info');
     let count = 0;
 
     for (let code = from; code <= to; code++) {
         try {
-            const url = cfg.webAppUrl + '?action=search&empCode=' + encodeURIComponent(code);
+            const url = WEB_APP_URL + '?action=search&empCode=' + encodeURIComponent(code);
             const resp = await fetch(url);
             const data = await resp.json();
             if (data.found) {
